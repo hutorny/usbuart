@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/runTests"
+        android:orderInCategory="100"
+        android:showAsAction="always"
+        android:onClick="onClickMenuTest"
+        android:icon="@drawable/ic_action_play"
+        android:title="@string/menu_run_tests"/>
+</menu>

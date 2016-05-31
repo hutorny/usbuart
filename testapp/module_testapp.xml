@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="module_testapp" default="compile.module.testapp">
+  <dirname property="module.testapp.basedir" file="${ant.file.module_testapp}"/>
+  
+  <property name="module.jdk.home.testapp" value="${project.jdk.home}"/>
+  <property name="module.jdk.bin.testapp" value="${project.jdk.bin}"/>
+  <property name="module.jdk.classpath.testapp" value="${project.jdk.classpath}"/>
+  
+  <property name="compiler.args.testapp" value="-encoding UTF-8 -source 1.7 -target 1.7 ${compiler.args}"/>
+  
+  <property name="testapp.output.dir" value="${module.testapp.basedir}/../out/production/testapp"/>
+  <property name="testapp.testoutput.dir" value="${module.testapp.basedir}/../out/test/testapp"/>
+  
+  <path id="testapp.module.bootclasspath">
+    <!-- Paths to be included in compilation bootclasspath -->
+  </path>
+  
+  <path id="testapp.module.production.classpath">
+    <path refid="${module.jdk.classpath.testapp}"/>
+    <pathelement location="${api.output.dir}"/>
+    <pathelement location="${service.output.dir}"/>
+  </path>
+  
+  <path id="testapp.runtime.production.module.classpath">
+    <pathelement location="${testapp.output.dir}"/>
+    <path refid="api.runtime.production.module.classpath"/>
+    <path refid="service.runtime.production.module.classpath"/>
+  </path>
+  
+  <path id="testapp.module.classpath">
+    <path refid="${module.jdk.classpath.testapp}"/>
+    <pathelement location="${testapp.output.dir}"/>
+    <pathelement location="${api.testoutput.dir}"/>
+    <pathelement location="${api.output.dir}"/>
+    <pathelement location="${service.testoutput.dir}"/>
+    <pathelement location="${service.output.dir}"/>
+  </path>
+  
+  <path id="testapp.runtime.module.classpath">
+    <pathelement location="${testapp.testoutput.dir}"/>
+    <pathelement location="${testapp.output.dir}"/>
+    <path refid="api.runtime.module.classpath"/>
+    <path refid="service.runtime.module.classpath"/>
+  </path>
+  
+  
+  <patternset id="excluded.from.module.testapp">
+    <patternset refid="ignored.files"/>
+  </patternset>
+  
+  <patternset id="excluded.from.compilation.testapp">
+    <patternset refid="excluded.from.module.testapp"/>
+  </patternset>
+  
+  <path id="testapp.module.sourcepath">
+    <dirset dir="${module.testapp.basedir}">
+      <include name="src"/>
+      <include name="gen"/>
+    </dirset>
+  </path>
+  
+  
+  <target name="compile.module.testapp" depends="compile.module.testapp.production,compile.module.testapp.tests" description="Compile module testapp"/>
+  
+  <target name="compile.module.testapp.production" depends="register.custom.compilers,compile.module.api,compile.module.service" description="Compile module testapp; production classes">
+    <mkdir dir="${testapp.output.dir}"/>
+    <javac2 destdir="${testapp.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.testapp}/javac">
+      <compilerarg line="${compiler.args.testapp}"/>
+      <bootclasspath refid="testapp.module.bootclasspath"/>
+      <classpath refid="testapp.module.production.classpath"/>
+      <src refid="testapp.module.sourcepath"/>
+      <patternset refid="excluded.from.compilation.testapp"/>
+    </javac2>
+    
+    <copy todir="${testapp.output.dir}">
+      <fileset dir="${module.testapp.basedir}/src">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+      <fileset dir="${module.testapp.basedir}/gen">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="compile.module.testapp.tests" depends="register.custom.compilers,compile.module.testapp.production" description="compile module testapp; test classes" unless="skip.tests"/>
+  
+  <target name="clean.module.testapp" description="cleanup module">
+    <delete dir="${testapp.output.dir}"/>
+    <delete dir="${testapp.testoutput.dir}"/>
+  </target>
+</project>

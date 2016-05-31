@@ -1,0 +1,18 @@
+Compiled from "EIA_TIA_232_Info.java"
+public class EIA_TIA_232_Info {
+  public int baudrate;
+    descriptor: I
+  public char databits;
+    descriptor: C
+  public EIA_TIA_232_Info$parity_t parity;
+    descriptor: Linfo/usbuart/api/EIA_TIA_232_Info$parity_t;
+  public EIA_TIA_232_Info$stop_bits_t stopbits;
+    descriptor: Linfo/usbuart/api/EIA_TIA_232_Info$stop_bits_t;
+  public EIA_TIA_232_Info$flow_control_t flowcontrol;
+    descriptor: Linfo/usbuart/api/EIA_TIA_232_Info$flow_control_t;
+  EIA_TIA_232_Info(int, char, EIA_TIA_232_Info$parity_t, EIA_TIA_232_Info$stop_bits_t, EIA_TIA_232_Info$flow_control_t);
+    descriptor: (ICLinfo/usbuart/api/EIA_TIA_232_Info$parity_t;Linfo/usbuart/api/EIA_TIA_232_Info$stop_bits_t;Linfo/usbuart/api/EIA_TIA_232_Info$flow_control_t;)V
+
+  public static final EIA_TIA_232_Info _115200_8N1n();
+    descriptor: ()Linfo/usbuart/api/EIA_TIA_232_Info;
+}

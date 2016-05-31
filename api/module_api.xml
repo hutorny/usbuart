@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="module_api" default="compile.module.api">
+  <dirname property="module.api.basedir" file="${ant.file.module_api}"/>
+  
+  <property name="module.jdk.home.api" value="${project.jdk.home}"/>
+  <property name="module.jdk.bin.api" value="${project.jdk.bin}"/>
+  <property name="module.jdk.classpath.api" value="${project.jdk.classpath}"/>
+  
+  <property name="compiler.args.api" value="-encoding UTF-8 -source 1.7 -target 1.7 ${compiler.args}"/>
+  
+  <property name="api.output.dir" value="${module.api.basedir}/../out/production/api"/>
+  <property name="api.testoutput.dir" value="${module.api.basedir}/../out/test/api"/>
+  
+  <path id="api.module.bootclasspath">
+    <!-- Paths to be included in compilation bootclasspath -->
+  </path>
+  
+  <path id="api.module.production.classpath">
+    <path refid="${module.jdk.classpath.api}"/>
+  </path>
+  
+  <path id="api.runtime.production.module.classpath">
+    <pathelement location="${api.output.dir}"/>
+  </path>
+  
+  <path id="api.module.classpath">
+    <path refid="${module.jdk.classpath.api}"/>
+    <pathelement location="${api.output.dir}"/>
+  </path>
+  
+  <path id="api.runtime.module.classpath">
+    <pathelement location="${api.testoutput.dir}"/>
+    <pathelement location="${api.output.dir}"/>
+  </path>
+  
+  
+  <patternset id="excluded.from.module.api">
+    <patternset refid="ignored.files"/>
+  </patternset>
+  
+  <patternset id="excluded.from.compilation.api">
+    <patternset refid="excluded.from.module.api"/>
+  </patternset>
+  
+  <path id="api.module.sourcepath">
+    <dirset dir="${module.api.basedir}">
+      <include name="src"/>
+      <include name="gen"/>
+    </dirset>
+  </path>
+  
+  
+  <target name="compile.module.api" depends="compile.module.api.production,compile.module.api.tests" description="Compile module api"/>
+  
+  <target name="compile.module.api.production" depends="register.custom.compilers" description="Compile module api; production classes">
+    <mkdir dir="${api.output.dir}"/>
+    <javac2 destdir="${api.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.api}/javac">
+      <compilerarg line="${compiler.args.api}"/>
+      <bootclasspath refid="api.module.bootclasspath"/>
+      <classpath refid="api.module.production.classpath"/>
+      <src refid="api.module.sourcepath"/>
+      <patternset refid="excluded.from.compilation.api"/>
+    </javac2>
+    
+    <copy todir="${api.output.dir}">
+      <fileset dir="${module.api.basedir}/src">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+      <fileset dir="${module.api.basedir}/gen">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="compile.module.api.tests" depends="register.custom.compilers,compile.module.api.production" description="compile module api; test classes" unless="skip.tests"/>
+  
+  <target name="clean.module.api" description="cleanup module">
+    <delete dir="${api.output.dir}"/>
+    <delete dir="${api.testoutput.dir}"/>
+  </target>
+</project>

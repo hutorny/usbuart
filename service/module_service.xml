@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="module_service" default="compile.module.service">
+  <dirname property="module.service.basedir" file="${ant.file.module_service}"/>
+  
+  <property name="module.jdk.home.service" value="${project.jdk.home}"/>
+  <property name="module.jdk.bin.service" value="${project.jdk.bin}"/>
+  <property name="module.jdk.classpath.service" value="${project.jdk.classpath}"/>
+  
+  <property name="compiler.args.service" value="-encoding UTF-8 -source 1.7 -target 1.7 ${compiler.args}"/>
+  
+  <property name="service.output.dir" value="${module.service.basedir}/../out/production/service"/>
+  <property name="service.testoutput.dir" value="${module.service.basedir}/../out/test/service"/>
+  
+  <path id="service.module.bootclasspath">
+    <!-- Paths to be included in compilation bootclasspath -->
+  </path>
+  
+  <path id="service.module.production.classpath">
+    <path refid="${module.jdk.classpath.service}"/>
+    <pathelement location="${api.output.dir}"/>
+  </path>
+  
+  <path id="service.runtime.production.module.classpath">
+    <pathelement location="${service.output.dir}"/>
+    <path refid="api.runtime.production.module.classpath"/>
+  </path>
+  
+  <path id="service.module.classpath">
+    <path refid="${module.jdk.classpath.service}"/>
+    <pathelement location="${service.output.dir}"/>
+    <pathelement location="${api.testoutput.dir}"/>
+    <pathelement location="${api.output.dir}"/>
+  </path>
+  
+  <path id="service.runtime.module.classpath">
+    <pathelement location="${service.testoutput.dir}"/>
+    <pathelement location="${service.output.dir}"/>
+    <path refid="api.runtime.module.classpath"/>
+  </path>
+  
+  
+  <patternset id="excluded.from.module.service">
+    <patternset refid="ignored.files"/>
+  </patternset>
+  
+  <patternset id="excluded.from.compilation.service">
+    <patternset refid="excluded.from.module.service"/>
+  </patternset>
+  
+  <path id="service.module.sourcepath">
+    <dirset dir="${module.service.basedir}">
+      <include name="src"/>
+      <include name="gen"/>
+    </dirset>
+  </path>
+  
+  
+  <target name="compile.module.service" depends="compile.module.service.production,compile.module.service.tests" description="Compile module service"/>
+  
+  <target name="compile.module.service.production" depends="register.custom.compilers,compile.module.api" description="Compile module service; production classes">
+    <mkdir dir="${service.output.dir}"/>
+    <javac2 destdir="${service.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.service}/javac">
+      <compilerarg line="${compiler.args.service}"/>
+      <bootclasspath refid="service.module.bootclasspath"/>
+      <classpath refid="service.module.production.classpath"/>
+      <src refid="service.module.sourcepath"/>
+      <patternset refid="excluded.from.compilation.service"/>
+    </javac2>
+    
+    <copy todir="${service.output.dir}">
+      <fileset dir="${module.service.basedir}/src">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+      <fileset dir="${module.service.basedir}/gen">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="compile.module.service.tests" depends="register.custom.compilers,compile.module.service.production" description="compile module service; test classes" unless="skip.tests"/>
+  
+  <target name="clean.module.service" description="cleanup module">
+    <delete dir="${service.output.dir}"/>
+    <delete dir="${service.testoutput.dir}"/>
+  </target>
+</project>
