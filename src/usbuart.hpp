@@ -187,9 +187,9 @@ extern Log log;
 }
 
 #if defined(__GNUC__) && defined(DEBUG)
-#	define __ __PRETTY_FUNCTION__
+#	define PF __PRETTY_FUNCTION__
 #else
-#	define __ ("usbuart")
+#	define PF ("usbuart")
 #endif
 
 #endif /* USBUART_HPP_ */

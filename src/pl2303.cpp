@@ -90,7 +90,7 @@ public:
 		setup.parity 		= info.parity;
 		setup.stopbits		= info.stopbits;
 
-		log.i(__,"protocol {%d,%d,%d,%d}",setup.baudrate_le,
+		log.i(PF,"protocol {%d,%d,%d,%d}",setup.baudrate_le,
 				setup.databits, setup.parity, setup.stopbits);
 		control(set_protocol_rqt, set_protocol_req, &setup, sizeof(setup));
 		reset();
@@ -164,10 +164,10 @@ driver* pl2303::factory::create(libusb_device_handle* handle, uint8_t num)
 			break;
 	}
 	if( ! found ) return nullptr;
-	log.i(__,"probing %s for %04x:%04x", "pl2303", did.vid, did.pid);
+	log.i(PF,"probing %s for %04x:%04x", "pl2303", did.vid, did.pid);
 	try { probe(handle, num); }
 	catch(error_t err) {
-		log.i(__,"probe %s error %d for %04x:%04x",
+		log.i(PF,"probe %s error %d for %04x:%04x",
 				"pl2303", +err, did.vid, did.pid);
 		throw err;
 	}

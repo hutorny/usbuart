@@ -36,7 +36,7 @@ void generic::write_cv(uint8_t req, uint16_t val, uint16_t index)
 														const {
 	if( int r = libusb_control_transfer(dev,
 			vendor_reqo, req, val, index, nullptr, 0, timeout) < 0) {
-		log.e(__, "control transfer %02x,%02x,%04x,%04x "
+		log.e(PF, "control transfer %02x,%02x,%04x,%04x "
 				  "fail with error %d: %s\n", vendor_reqo, req, val, index, r,
 				  libusb_error_name(r));
 		throw error_t::control_error;
@@ -47,7 +47,7 @@ void generic::control(uint8_t reqtype, uint8_t req, void* data, size_t size)
 														const {
 	if( int r = libusb_control_transfer(dev,
 			reqtype, req, 0, 0, (unsigned char*)data, size, timeout) < 0 ) {
-		log.e(__,"control transfer %02x,%02x,%04x,%04x "
+		log.e(PF,"control transfer %02x,%02x,%04x,%04x "
 		"fail with error %d: %s\n", reqtype, req,
 		0, 0, r, libusb_error_name(r));
 		throw error_t::control_error;
@@ -59,7 +59,7 @@ void generic::read_cv(uint8_t req, uint16_t val, uint8_t& dst)
 														const {
 	if( int r = libusb_control_transfer(dev,
 			vendor_reqi, req, val, 0, &dst, 1, timeout) != 1 ) {
-		log.e(__,"control transfer %02x,%02x,%04x,%04x "
+		log.e(PF,"control transfer %02x,%02x,%04x,%04x "
 			"fail with error %d: %s\n", vendor_reqi, req,
 			val, 0, r, libusb_error_name(r));
 		throw error_t::control_error;
@@ -70,7 +70,7 @@ void generic::read_cv(uint8_t req, uint16_t val, uint16_t& dst)
 														const {
 	if( int r = libusb_control_transfer(dev,
 			vendor_reqi, req, val, 0, (unsigned char*)&dst, 1, timeout) != 2 ) {
-		log.e(__,"control transfer %02x,%02x,%04x,%04x "
+		log.e(PF,"control transfer %02x,%02x,%04x,%04x "
 			"fail with error %d: %s\n", vendor_reqi, req,
 			val, 0, r, libusb_error_name(r));
 		throw error_t::control_error;
@@ -82,9 +82,9 @@ void generic::claim_interface() const {
 	int r = libusb_claim_interface(dev, ifcnum);
 	if( r == 0 ) return;
 	int err = errno;
-	log.e(__,"claim interface %d fail %d: %s\n", ifcnum, r, libusb_error_name(r));
+	log.e(PF,"claim interface %d fail %d: %s\n", ifcnum, r, libusb_error_name(r));
 	if( err )
-		log.e(__,"%s\n", strerror(err));
+		log.e(PF,"%s\n", strerror(err));
 	//FIXME try to release kernel driver
 	//
 	switch( r ) {

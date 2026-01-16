@@ -65,7 +65,7 @@ public:
 		uint16_t check;
 		read_cv(req, 0, check);
 		if( check != expected ) {
-			log.i(__,"probe mismatch on %2x: got %4x expected %4x",
+			log.i(PF,"probe mismatch on %2x: got %4x expected %4x",
 					req, check, expected);
 			throw error_t::probe_mismatch;
 		}
@@ -140,10 +140,10 @@ driver* ch34x::factory::create(libusb_device_handle* handle, uint8_t ifc)
 			break;
 	}
 	if( ! found ) return nullptr;
-	log.i(__,"probing %s for %04x:%04x", "ch34x", did.vid, did.pid);
+	log.i(PF,"probing %s for %04x:%04x", "ch34x", did.vid, did.pid);
 	try { probe(handle, ifc); }
 	catch(error_t err) {
-		log.i(__,"probe %s error %d for %04x:%04x",
+		log.i(PF,"probe %s error %d for %04x:%04x",
 				"ch34x", +err, did.vid, did.pid);
 		throw err;
 	}

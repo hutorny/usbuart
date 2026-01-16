@@ -54,14 +54,14 @@ public:
 
 	void read_callback(libusb_transfer* readxfer, size_t& readpos) noexcept {
 		if( readxfer->actual_length < 2 ) {
-			log.w(__,"malformed transfer");
+			log.w(PF,"malformed transfer");
 			readxfer->actual_length = 0;
 			return;
 		}
 		readpos = 2;
 		if( uint8_t err = (readxfer->buffer[1] & error_mask) ) {
 			errors |= err;
-			log.w(__,"error %02x:%s%s%s%s", err,
+			log.w(PF,"error %02x:%s%s%s%s", err,
 				(err&(1<<break_interrupt) ? " break"   : ""),
 				(err&(1<<framing_error  ) ? " framing" : ""),
 				(err&(1<<parity_error   ) ? " parity"  : ""),
@@ -102,7 +102,7 @@ public:
 		uint16_t index;
 		uint16_t value;
 		compute_divisors(baudrate, value, index);
-		log.i(__,"baudrate=%d, i=%#04X v=%#04X", baudrate, index, value);
+		log.i(PF,"baudrate=%d, i=%#04X v=%#04X", baudrate, index, value);
 		write_cv(set_baudrate_req, value, index | ifcnum);
 	}
 
@@ -169,7 +169,7 @@ driver* ftdi::factory::create(libusb_device_handle* handle, uint8_t num) const {
 
 	bool ish = false;
 	if( num >= countof(h_ifcs) ) {
-		log.e(__,"interface #%d exceeds limit %d", num, countof(h_ifcs));
+		log.e(PF,"interface #%d exceeds limit %d", num, countof(h_ifcs));
 		throw error_t::invalid_param;
 	}
 
@@ -195,7 +195,7 @@ driver* ftdi::factory::create(libusb_device_handle* handle, uint8_t num) const {
 			   desc.idProduct == high_speed[2] );
 	}
 	if( ! ish && num ) {
-		log.e(__,"interface #%d exceeds limit %d", num, 0);
+		log.e(PF,"interface #%d exceeds limit %d", num, 0);
 		throw error_t::invalid_param;
 	}
 

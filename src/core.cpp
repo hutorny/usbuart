@@ -147,16 +147,16 @@ static inline void throw_if(bool bad, const char * tag, const char* msg)
 }
 
 static void validate(const eia_tia_232_info& i) {
-	throw_if(i.databits < 5 || i.databits > 9, __, "databits");
-	throw_if(i.parity   > parity_t::space, __, "parity");
-	throw_if(i.stopbits > stop_bits_t::two, __, "stopbits");
-	throw_if(i.flowcontrol > flow_control_t::xon_xoff, __, "flowcontrol");
-	throw_if(i.baudrate == 0, __, "flowcontrol");
+	throw_if(i.databits < 5 || i.databits > 9, PF, "databits");
+	throw_if(i.parity   > parity_t::space, PF, "parity");
+	throw_if(i.stopbits > stop_bits_t::two, PF, "stopbits");
+	throw_if(i.flowcontrol > flow_control_t::xon_xoff, PF, "flowcontrol");
+	throw_if(i.baudrate == 0, PF, "flowcontrol");
 }
 
 static void validate(const channel& ch) {
-	throw_if(fcntl(ch.fd_read, F_GETFD)<0, __, "fd_read");
-	throw_if(fcntl(ch.fd_write, F_GETFD)<0, __, "fd_write");
+	throw_if(fcntl(ch.fd_read, F_GETFD)<0, PF, "fd_read");
+	throw_if(fcntl(ch.fd_write, F_GETFD)<0, PF, "fd_write");
 }
 
 
@@ -293,7 +293,7 @@ public:
 	}
 
 	virtual ~file_channel() noexcept {
-		log.d(__,"this=%p", this);
+		log.d(PF,"this=%p", this);
 		if( writexfer ) { /* init may fail leaving nulls in all pointers  	*/
 			free(writexfer->buffer);
 			libusb_free_transfer(writexfer);
@@ -334,7 +334,7 @@ public:
 	}
 
 	inline void events() noexcept {
-//		log.d(__,"%p ready %d/%d hangup: %d/%d", this,
+//		log.d(PF,"%p ready %d/%d hangup: %d/%d", this,
 //				pipein_ready, pipeout_ready, pipein_hangup, pipeout_hangup);
 		if( pipein_ready ) readpipe();
 		if( pipeout_ready ) writepipe(current);
@@ -387,13 +387,13 @@ public:
 	void readpipe() noexcept {
 		size_t size;
 		void * buff = getwritebuff(size); /* reading done to USB write buffer */
-//		log.d(__,"size=%d", size);
+//		log.d(PF,"size=%d", size);
 		ssize_t res = read(_readfd(), buff, size); /* whatever read from file */
-		if( res <= 0 && is_error(__,res) ) {
+		if( res <= 0 && is_error(PF,res) ) {
 			pipein_hangup = true;
 			return;
 		}
-//		log.d(__,"%ld", (long)res); /* on some platforms sszie_t is long */
+//		log.d(PF,"%ld", (long)res); /* on some platforms sszie_t is long */
 		if( res > 0 ) submit(res); /* submit to USB */
 		else if ( res == 0 ) {
 			pipein_hangup = true;
@@ -408,8 +408,8 @@ public:
 		unsigned char* buff = getreadbuff(transfer, size); /* write from USB read buffer*/
 		if( ! size ) return;
 		ssize_t res = write(_writefd(), buff, size); /* write to file */
-//		log.d(__,"[%d]=\"%*.*s\" -> %d", size, size, size, (char*) buff, res);
-		if( res <= 0 && is_error(__,res) ) {
+//		log.d(PF,"[%d]=\"%*.*s\" -> %d", size, size, size, (char*) buff, res);
+		if( res <= 0 && is_error(PF,res) ) {
 			pipeout_hangup = true;
 			return;
 		}
@@ -449,11 +449,11 @@ public:
 		case LIBUSB_TRANSFER_STALL:
 		case LIBUSB_TRANSFER_OVERFLOW:
 			//TODO how to handle these errors
-			log.e(__,"transfer severe error %s", libusb_error_name(transfer->status));
+			log.e(PF,"transfer severe error %s", libusb_error_name(transfer->status));
 			request_removal(true);
 			return true;
 		}
-		log.w(__,"transfer error %s", libusb_error_name(transfer->status));
+		log.w(PF,"transfer error %s", libusb_error_name(transfer->status));
 		return false;
 	}
 
@@ -465,7 +465,7 @@ public:
 		    	chnl->error_callback(transfer)	)
 		    	chnl->read_callback(transfer);
 		}
-		else log.e(__, "broken callback in transfer %p",transfer);
+		else log.e(PF, "broken callback in transfer %p",transfer);
 	}
 
 	static void write_cb(libusb_transfer* transfer) noexcept {
@@ -475,7 +475,7 @@ public:
 		    	chnl->error_callback(transfer)	)
 		    	chnl->write_callback(transfer);
 		}
-		else log.e(__, "broken callback in transfer %p",transfer);
+		else log.e(PF, "broken callback in transfer %p",transfer);
 	}
 
 	inline size_t chunksize() const noexcept {
@@ -484,16 +484,16 @@ public:
 
 	bool submit_transfer(libusb_transfer* transfer) noexcept {
 //		if( transfer->actual_length > 2 )
-//		log.d(__,"length=%d", transfer->length);
+//		log.d(PF,"length=%d", transfer->length);
 		int err;
 		switch( err=libusb_submit_transfer(transfer) ) {
 		case 0:
 			return true;
 		case LIBUSB_ERROR_NO_DEVICE:
-			log.w(__, "NO DEVICE");
+			log.w(PF, "NO DEVICE");
 			break;
 		default:
-			log.e(__,"libusb_submit_transfer failed with error %d: %s",
+			log.e(PF,"libusb_submit_transfer failed with error %d: %s",
 					err, libusb_error_name(err));
 		}
 		request_removal(true);
@@ -502,7 +502,7 @@ public:
 
 	void read_callback(libusb_transfer* readxfer) noexcept {
 //		if( readxfer->actual_length > 2 )
-//			log.d(__,"actual_length=%d readpos={%d,%d}", readxfer->actual_length, readpos[0], readpos[1]);
+//			log.d(PF,"actual_length=%d readpos={%d,%d}", readxfer->actual_length, readpos[0], readpos[1]);
 		drv->read_callback(readxfer, readpos[readxfer == readxfer1]);
 		if( pipeout_hangup ) return;
 		if( readpos[readxfer == readxfer1] >= readxfer->actual_length ) {
@@ -514,14 +514,14 @@ public:
 	}
 
 	void write_callback(libusb_transfer*) noexcept {
-//		log.d(__,"actual_length=%d", writexfer->actual_length);
+//		log.d(PF,"actual_length=%d", writexfer->actual_length);
 		if( pipein_hangup ) return;
 		if( writexfer->actual_length < writexfer->length ) {
 			if( writexfer->actual_length != 0 )
 				memmove(writexfer->buffer,
 						writexfer->buffer + writexfer->actual_length,
 						writexfer->length - writexfer->actual_length);
-			log.i(__,"partially complete transfer %d/%d",
+			log.i(PF,"partially complete transfer %d/%d",
 					writexfer->actual_length, writexfer->length);
 			writexfer_busy = submit_transfer(writexfer);
 		} else {
@@ -534,7 +534,7 @@ public:
 	inline unsigned char* getreadbuff(libusb_transfer* readxfer,
 			size_t& size) const noexcept {
 		if( readxfer_busy[readxfer == readxfer1] ) {
-			log.w(__,"accessing busy read transfer");
+			log.w(PF,"accessing busy read transfer");
 			size = 0;
 			return nullptr;
 		}
@@ -545,7 +545,7 @@ public:
 	unsigned char* getwritebuff(size_t& size) const noexcept {
 		if( writexfer_busy ) {
 			size = 0;
-			log.w(__,"accessing busy write transfer");
+			log.w(PF,"accessing busy write transfer");
 			return nullptr;
 		}
 		size = chunksize();
@@ -553,24 +553,24 @@ public:
 	}
 
 	inline void submit(size_t size) noexcept {
-//		log.d(__,"size=%d", size);
+//		log.d(PF,"size=%d", size);
 		if( writexfer_busy ) {
-			log.e(__,"wrong state");
+			log.e(PF,"wrong state");
 		}
 		writexfer->length = size;
 		writexfer_busy = submit_transfer(writexfer);
 	}
 
 	bool consumed(libusb_transfer* readxfer, size_t size) noexcept {
-//		log.d(__,"size=%d", size);
+//		log.d(PF,"size=%d", size);
 		if( readxfer_busy[readxfer == readxfer1] ) {
-			log.e(__, "wrong state of readxfer %p", readxfer);
+			log.e(PF, "wrong state of readxfer %p", readxfer);
 			return false;
 		}
 		auto& pos(readpos[readxfer == readxfer1]);
 		pos += size;
 //		if( pos > readxfer->actual_length )
-//			log.d(__, "readpos > readxfer->actual_length ");
+//			log.d(PF, "readpos > readxfer->actual_length ");
 		if( pos >= readxfer->actual_length ) {
 			readxfer_busy[readxfer == readxfer1] = submit_transfer(readxfer);
 			current = readxfer == readxfer1 ? readxfer0 : readxfer1;
@@ -580,7 +580,7 @@ public:
 	}
 
 	inline bool busy() const noexcept {
-//		log.d(__,"w=%d r={%d,%d}",writexfer_busy,readxfer_busy[0],readxfer_busy[0]);
+//		log.d(PF,"w=%d r={%d,%d}",writexfer_busy,readxfer_busy[0],readxfer_busy[0]);
 		return writexfer_busy || readxfer_busy[0] || readxfer_busy[1];
 	}
 
@@ -619,7 +619,7 @@ public:
 	  , exrd(ch.fd_read)
 	  , exrw(ch.fd_write) {}
 	~pipe_channel() noexcept {
-//		log.d(__,"!");
+//		log.d(PF,"!");
 		::close(exrd);
 		::close(fdrw);
 		::close(fdrd);
@@ -656,12 +656,12 @@ class context::backend {
 public:
 	backend() {
 		if( int err = libusb_init(&ctx) ) {
-			log.e(__,"libusb_error %d : %s", err, libusb_error_name(err));
+			log.e(PF,"libusb_error %d : %s", err, libusb_error_name(err));
 			throw error_t::libusb_error;
 		}
 	}
 	~backend() {
-		log.d(__,"this=%p", this);
+		log.d(PF,"this=%p", this);
 		while( child_list.size() ) {
 			auto & child = child_list.back();
 			request_removal(child);
@@ -671,7 +671,7 @@ public:
 		cleanup();
 		static constexpr int N = 5;
 		for(int i = N; i && delete_list.size(); --i) {
-//			log.d(__,"delete_list.size()=%d count=%d", delete_list.size(),i);
+//			log.d(PF,"delete_list.size()=%d count=%d", delete_list.size(),i);
 			handle_libusb_events((N+1-i)*100);
 			cleanup();
 		}
@@ -680,7 +680,7 @@ public:
 
 	file_channel* find(const channel& ch) noexcept {
 		for(auto i : child_list) {
-			log.d(__,"i=%p", (file_channel*) i);
+			log.d(PF,"i=%p", (file_channel*) i);
 			if( i != nullptr && i->equals(ch) ) {
 				if( util::find(delete_list, i) == delete_list.end())
 					return i;
@@ -711,7 +711,7 @@ public:
 		transaction<file_channel> child(ok2, (pipes ?
 			new pipe_channel(*this, ch, drv):new file_channel(*this, ch, drv)));
 		ok1 = true;
-		log.i(__,"channel {%d,%d}", ch.fd_read, ch.fd_write);
+		log.i(PF,"channel {%d,%d}", ch.fd_read, ch.fd_write);
 		drv->setup(pi);
 		child->init();
 		child_list.push_back(child);
@@ -761,7 +761,7 @@ public:
 		int polled = poll(poll_list.data(), poll_list.size(), timeout);
 		if( polled < 0 ) {
 			if( polled == EINVAL ) throw error_t::poll_error;
-			throw_error(__,errno);
+			throw_error(PF,errno);
 			return polled;
 		}
 		for(auto item = pollfd_list.begin();
@@ -783,11 +783,11 @@ public:
 	 */
 	inline void poll_request(int fd, short int events) noexcept {
 		if( util::find(poll_list, fd) != poll_list.end() ) {
-			log.w(__, "%d already in poll_list", fd);
+			log.w(PF, "%d already in poll_list", fd);
 			return;
 		}
 		poll_list.push_back({ fd, events, 0 });
-//		log.d(__,"[%d]=%d",poll_list.size()-1,fd);
+//		log.d(PF,"[%d]=%d",poll_list.size()-1,fd);
 	}
 
 	inline libusb_device* find(const device_addr& addr) const noexcept {
@@ -810,10 +810,10 @@ public:
 		libusb_unref_device(dev); /* it was refed in find */
 		if( res ) {
 			int err = errno;
-			log.i(__,"libusb_open fail (%d) %s%s%s", res,
+			log.i(PF,"libusb_open fail (%d) %s%s%s", res,
 				libusb_error_name(res), (errno ? ", " : ""),
 				(errno ? strerror(errno) : ""));
-			throw_error(__, err == 0 ? res : err);
+			throw_error(PF, err == 0 ? res : err);
 		}
 
 		bool success = false;
@@ -828,13 +828,13 @@ public:
 		libusb_device* found = nullptr;
 		int n = libusb_get_device_list(ctx, &list);
 		if( n < 0 ) {
-			log.e(__, "libusb_get_device_list fail");
+			log.e(PF, "libusb_get_device_list fail");
 			throw error_t::libusb_error;
 		}
 		for(int i = 0; i < n && found == nullptr; ++i) {
 			if( match(list[i]) ) {
 				found = list[i];
-				log.i(__, "found %03d/%03d", libusb_get_bus_number(found),
+				log.i(PF, "found %03d/%03d", libusb_get_bus_number(found),
 					libusb_get_device_address(found));
 				break;
 			}
@@ -846,7 +846,7 @@ public:
 
 	void close(const channel& chnl) {
 		file_channel* child = find(chnl);
-//		log.d(__,"%p",child);
+//		log.d(PF,"%p",child);
 		if( child == nullptr ) return;
 		request_removal(child);
 	}
@@ -854,19 +854,19 @@ public:
 	inline void request_removal(file_channel* child) noexcept {
 		util::erase(child_list, child);
 		if( util::find(delete_list, child) == delete_list.end() ) {
-//			log.d(__,"child=%p",child);
+//			log.d(PF,"child=%p",child);
 			delete_list.push_back(child);
 		}
 	}
 
 	bool cleanup() noexcept {
 //		if( delete_list.size() > 0 )
-//			log.d(__,"delete_list[0]==%p child_list[0]=%p",delete_list[0],
+//			log.d(PF,"delete_list[0]==%p child_list[0]=%p",delete_list[0],
 //					child_list.size() > 0 ? child_list[0] : nullptr);
 		for(auto i = delete_list.begin(); i < delete_list.end(); ) {
 			file_channel * child = *i;
 			if( child->busy() ) {
-				log.i(__,"busy channel skips cleanup %p",child);
+				log.i(PF,"busy channel skips cleanup %p",child);
 				++i;
 				continue;
 			}
@@ -936,26 +936,26 @@ context::~context() noexcept {
 
 int context::attach(device_id id, channel ch,
 		const eia_tia_232_info& pi) noexcept {
-	return safe(__,[&]{ return priv->attach(id,ch,pi); });
+	return safe(PF,[&]{ return priv->attach(id,ch,pi); });
 }
 
 int context::attach(device_addr ba, channel ch, const eia_tia_232_info& pi) noexcept {
-	return safe(__,[&]{ return priv->attach(ba,ch,pi); });
+	return safe(PF,[&]{ return priv->attach(ba,ch,pi); });
 }
 
 int context::pipe(device_id id, channel& ch,
 		const eia_tia_232_info& pi) noexcept {
-	return safe(__,[&]{ return priv->pipe(id,ch,pi); });
+	return safe(PF,[&]{ return priv->pipe(id,ch,pi); });
 }
 
 int context::pipe(device_addr ba, channel& ch,
 		const eia_tia_232_info& pi) noexcept {
-	return safe(__,[&]{ return priv->pipe(ba,ch,pi); });
+	return safe(PF,[&]{ return priv->pipe(ba,ch,pi); });
 }
 
 /** close channel, detaches files from USB device						*/
 void context::close(channel ch) noexcept {
-	safe(__,[&]{
+	safe(PF,[&]{
 		lock_guard<decltype(priv->child_list)> lock(priv->child_list);
 		priv->close(ch);
 		return 0;
@@ -964,7 +964,7 @@ void context::close(channel ch) noexcept {
 
 /** resets USB device 													*/
 int context::reset(channel ch) noexcept {
-	return safe(__,[&]{
+	return safe(PF,[&]{
 		shared_guard<decltype(priv->child_list)> lock(priv->child_list);
 		file_channel* child = priv->find(ch);
 		if( child == nullptr ) return -error_t::no_channel;
@@ -975,7 +975,7 @@ int context::reset(channel ch) noexcept {
 
 /** resets USB device 													*/
 int context::status(channel ch) noexcept {
-	return safe(__,[&]{
+	return safe(PF,[&]{
 		shared_guard<decltype(priv->child_list)> lock(priv->child_list);
 		file_channel* child = priv->find(ch);
 		return child == nullptr ? -error_t::no_channel : child->status();
@@ -985,7 +985,7 @@ int context::status(channel ch) noexcept {
 
 /** sends RS232 break signal to the USB device 							*/
 int context::sendbreak(channel ch) noexcept {
-	return safe(__,[&]()->int{
+	return safe(PF,[&]()->int{
 		shared_guard<decltype(priv->child_list)> lock(priv->child_list);
 		file_channel* child = priv->find(ch);
 		if( child == nullptr ) return -error_t::no_channel;
@@ -996,7 +996,7 @@ int context::sendbreak(channel ch) noexcept {
 
 /** run libusb and async I/O message loops								*/
 int context::loop(int timeout) noexcept {
-	return safe(__,[&]()->int{
+	return safe(PF,[&]()->int{
 		int result;
 		{
 			lock_guard<decltype(priv->poll_list)> lock(priv->poll_list);
