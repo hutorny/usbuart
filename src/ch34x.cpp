@@ -40,7 +40,7 @@ public:
 //		libusb_release_interface(dev,ifc.number);
 	}
 
-	void setbaudrate(baudrate_t baudrate) const throw(error_t) {
+	void setbaudrate(baudrate_t baudrate) const {
 		static const struct baudtable table[] = {
 			{  2400, 0xd901, 0x0038},
 			{  4800, 0x6402, 0x001f},
@@ -61,7 +61,7 @@ public:
 		throw error_t::bad_baudrate;
 	}
 
-	inline void check_v(uint8_t req, uint16_t expected) const throw(error_t) {
+	inline void check_v(uint8_t req, uint16_t expected) const {
 		uint16_t check;
 		read_cv(req, 0, check);
 		if( check != expected ) {
@@ -71,7 +71,7 @@ public:
 		}
 	}
 
-	void probe() const throw(error_t) {
+	void probe() const {
 //		check_v(0x5f, 0x0027); /* read_cv 0x5f expect two bytes 0x27 0x00 	*/
 		write_cv(0xa1, 0, 0);
 //		check_v(0x95, 0x0056); /* read_cv 0x95 expect two bytes 0x56 0x00	*/
@@ -79,7 +79,7 @@ public:
 		write_cv(0xa1, 0x501f, 0xd90a);
 	}
 
-	void setup(const eia_tia_232_info& info) const throw(error_t) {
+	void setup(const eia_tia_232_info& info) const {
 		setbaudrate(info.baudrate);
 		setflowcontrol(info.flowcontrol);
 		reset();
@@ -89,21 +89,21 @@ public:
 		pos = 0;
 	}
 
-	void reset() const throw(error_t) {
+	void reset() const {
 		/* no documented sequence for resetting the chip */
 	}
 
 private:
-	inline ch34x(libusb_device_handle* d, uint8_t ifnum) throw(error_t)
+	inline ch34x(libusb_device_handle* d, uint8_t ifnum)
 	  : generic(d, _ifc, ifnum) {}
-	void setflowcontrol(flow_control_t fc) const throw(error_t) {
+	void setflowcontrol(flow_control_t fc) const {
 		write_cv(0xa4, (
 			fc == rts_cts ? ~(1 << 6) :
 			fc == dtr_dsr ? ~(1 << 5) : 0xFF),0);
 	}
 	static class factory : driver::factory {
-		void probe(libusb_device_handle*, uint8_t) const throw(error_t);
-		driver* create(libusb_device_handle*, uint8_t) const throw(error_t);
+		void probe(libusb_device_handle*, uint8_t) const;
+		driver* create(libusb_device_handle*, uint8_t) const;
 	} _factory;
 };
 
@@ -117,13 +117,13 @@ ch34x::factory ch34x::_factory;
 
 
 void ch34x::factory::probe(libusb_device_handle* handle, uint8_t ifc)
-														const throw(error_t) {
+														const {
 	ch34x driver(handle, ifc);
 	driver.probe();
 }
 
 driver* ch34x::factory::create(libusb_device_handle* handle, uint8_t ifc)
-														const throw(error_t) {
+														const {
 	static constexpr const uint32_t table[] = {
 		devid32(0x4348, 0x5523),
 		devid32(0x1a86, 0x7523),

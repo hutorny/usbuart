@@ -33,7 +33,7 @@ static constexpr uint8_t vendor_reqi =
 		(LIBUSB_REQUEST_TYPE_VENDOR | LIBUSB_ENDPOINT_IN);
 
 void generic::write_cv(uint8_t req, uint16_t val, uint16_t index)
-														const throw(error_t) {
+														const {
 	if( int r = libusb_control_transfer(dev,
 			vendor_reqo, req, val, index, nullptr, 0, timeout) < 0) {
 		log.e(__, "control transfer %02x,%02x,%04x,%04x "
@@ -44,7 +44,7 @@ void generic::write_cv(uint8_t req, uint16_t val, uint16_t index)
 }
 
 void generic::control(uint8_t reqtype, uint8_t req, void* data, size_t size)
-														const throw(error_t) {
+														const {
 	if( int r = libusb_control_transfer(dev,
 			reqtype, req, 0, 0, (unsigned char*)data, size, timeout) < 0 ) {
 		log.e(__,"control transfer %02x,%02x,%04x,%04x "
@@ -56,7 +56,7 @@ void generic::control(uint8_t reqtype, uint8_t req, void* data, size_t size)
 
 
 void generic::read_cv(uint8_t req, uint16_t val, uint8_t& dst)
-														const throw(error_t) {
+														const {
 	if( int r = libusb_control_transfer(dev,
 			vendor_reqi, req, val, 0, &dst, 1, timeout) != 1 ) {
 		log.e(__,"control transfer %02x,%02x,%04x,%04x "
@@ -67,7 +67,7 @@ void generic::read_cv(uint8_t req, uint16_t val, uint8_t& dst)
 }
 
 void generic::read_cv(uint8_t req, uint16_t val, uint16_t& dst)
-														const throw(error_t) {
+														const {
 	if( int r = libusb_control_transfer(dev,
 			vendor_reqi, req, val, 0, (unsigned char*)&dst, 1, timeout) != 2 ) {
 		log.e(__,"control transfer %02x,%02x,%04x,%04x "
@@ -78,7 +78,7 @@ void generic::read_cv(uint8_t req, uint16_t val, uint16_t& dst)
 	dst = le16toh(dst);
 }
 
-void generic::claim_interface() const throw(error_t) {
+void generic::claim_interface() const {
 	int r = libusb_claim_interface(dev, ifcnum);
 	if( r == 0 ) return;
 	int err = errno;

@@ -94,11 +94,11 @@ public:
 		value = ((divisor >> 3) & 0x3FFF) | (mapper[divisor & 7] & 0xC000);
 	}
 
-	void reset() const throw(error_t) {
+	void reset() const {
 	  write_cv(0, 0, ifcnum);
 	}
 
-	void setbaudrate(baudrate_t baudrate) const throw(error_t) {
+	void setbaudrate(baudrate_t baudrate) const {
 		uint16_t index;
 		uint16_t value;
 		compute_divisors(baudrate, value, index);
@@ -106,7 +106,7 @@ public:
 		write_cv(set_baudrate_req, value, index | ifcnum);
 	}
 
-	void setup(const eia_tia_232_info& info) const throw(error_t) {
+	void setup(const eia_tia_232_info& info) const {
 		setbaudrate(info.baudrate);
 		setlineprops(info);
 		reset();
@@ -116,9 +116,9 @@ protected:
 	bool isH;
 	uint8_t errors;
 private:
-	inline ftdi(libusb_device_handle* d, uint8_t num, bool ish) throw(error_t)
+	inline ftdi(libusb_device_handle* d, uint8_t num, bool ish)
 	  : generic(d, ish?h_ifcs[num]:l_ifc, num), isH(ish) {}
-	void setlineprops(const eia_tia_232_info& info) const throw(error_t) {
+	void setlineprops(const eia_tia_232_info& info) const {
 		uint16_t value =
 				info.databits					|
 				(((uint16_t)info.parity)<<8) 	|
@@ -127,7 +127,7 @@ private:
 		write_cv(set_flowcontrol_req, info.flowcontrol, ifcnum);
 	}
 	static class factory : driver::factory {
-		driver* create(libusb_device_handle*, uint8_t) const throw(error_t);
+		driver* create(libusb_device_handle*, uint8_t) const;
 	} _factory;
 };
 
@@ -148,7 +148,7 @@ const struct interface ftdi::h_ifcs[] = {
 
 ftdi::factory ftdi::_factory;
 
-driver* ftdi::factory::create(libusb_device_handle* handle, uint8_t num) const throw(error_t) {
+driver* ftdi::factory::create(libusb_device_handle* handle, uint8_t num) const {
 	static constexpr const uint16_t table[] = {
 		/* only original FTDI vid/pid's are supported at this time
 		 * See TN_100_USB_VID-PID_Guidelines.pdf and

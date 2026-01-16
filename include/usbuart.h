@@ -226,7 +226,7 @@ static constexpr eia_tia_232_info  _19200_8N1r { 19200,8,none,one,rts_cts};
 class context {
 public:
 	/** context constructor allocates a libusb context */
-	context() throw(error_t);
+	context();
 	~context() noexcept;
 
 	/** Attach pair of file descriptors to the USB device using VID/PID.

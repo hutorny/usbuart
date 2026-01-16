@@ -58,10 +58,10 @@ public:
 
 	size_t chunksize() const noexcept {	return 256; }
 
-	inline pl2303(libusb_device_handle* d, uint8_t num) throw(error_t)
+	inline pl2303(libusb_device_handle* d, uint8_t num)
 	  : generic(d, _ifc, num) {}
 
-	void probe() const throw(error_t) {
+	void probe() const {
 		uint8_t ignr;
 		read_cv (init_rq, 0x8484, ignr);
 		write_cv(init_rq, 0x0404, 0);
@@ -76,13 +76,13 @@ public:
 		//TODO (ifc.chip == chip::legacy )? (r = write(request, 2, 0x24)) :
 		write_cv(init_rq, 2, 0x44);
 	}
-	void setbaudrate(baudrate_t baudrate) const throw(error_t) {
+	void setbaudrate(baudrate_t baudrate) const {
 		pl2303_protocol_setup setup;
 		control(get_protocol_rqt, get_protocol_req, &setup, sizeof(setup));
 		setup.baudrate_le	= htole32(baudrate);
 		control(set_protocol_rqt, set_protocol_req, &setup, sizeof(setup));
 	}
-	void setup(const eia_tia_232_info& info) const throw(error_t) {
+	void setup(const eia_tia_232_info& info) const {
 		pl2303_protocol_setup setup;
 
 		setup.baudrate_le	= htole32(info.baudrate);
@@ -96,27 +96,27 @@ public:
 		reset();
 		generic::setup(info);
 	}
-	void sendbreak() const throw(error_t) {
+	void sendbreak() const {
 		control(break_rqtype, break_request, nullptr, 0);
 	}
-	void reset() const throw(error_t) {
+	void reset() const {
 		/* no documented reset sequence */
 	}
 
 	static inline bool devid(libusb_device_handle* handle, device_id& did);
 
 	static class factory : driver::factory {
-		void probe(libusb_device_handle*,uint8_t) const throw(error_t);
-		driver* create(libusb_device_handle*, uint8_t) const throw(error_t);
+		void probe(libusb_device_handle*,uint8_t) const;
+		driver* create(libusb_device_handle*, uint8_t) const;
 	} _factory;
 
 };
 
 class pl2303hx : public pl2303 {
 public:
-	inline pl2303hx(libusb_device_handle* d, uint8_t num) throw(error_t)
+	inline pl2303hx(libusb_device_handle* d, uint8_t num)
 	  : pl2303(d, num) {}
-	void reset() const throw(error_t) {
+	void reset() const {
 		write_cv(reset_rd_req, 0, 0);
 		write_cv(reset_wr_req, 0, 0);
 	}
@@ -132,7 +132,7 @@ const struct interface pl2303::_ifc = {
 pl2303::factory pl2303::_factory;
 
 void pl2303::factory::probe(libusb_device_handle* h,
-		uint8_t num) const throw(error_t) {
+		uint8_t num) const {
 	pl2303 driver(h, num);
 	driver.probe();
 }
@@ -150,7 +150,7 @@ inline bool pl2303::devid(libusb_device_handle* handle, device_id& did) {
 
 
 driver* pl2303::factory::create(libusb_device_handle* handle, uint8_t num)
-	const throw(error_t) {
+	const {
 	static constexpr const uint32_t table[] = {
 		#include "pl2303.inc"
 	};

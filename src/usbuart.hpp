@@ -58,19 +58,19 @@ public:
 	/**
 	 * setup protocol on the hardware level
 	 */
-	virtual void setup(const eia_tia_232_info&) const throw(error_t) =0;
+	virtual void setup(const eia_tia_232_info&) const =0;
 	/**
 	 * set baud rate only, keep other protocol properties intact
 	 */
-	virtual void setbaudrate(baudrate_t) const throw(error_t) =0;
+	virtual void setbaudrate(baudrate_t) const =0;
 	/**
 	 * set baud rate only, keep other protocol properties intact
 	 */
-	virtual void reset() const throw(error_t) =0;
+	virtual void reset() const =0;
 	/**
 	 * Send break
 	 */
-	virtual void sendbreak() const throw(error_t) =0;
+	virtual void sendbreak() const =0;
 	/**
 	 * called on read transfer completion
 	 * must fill pos with position of first payload data
@@ -85,7 +85,7 @@ public:
 	 * called before first byte is actually written to xfer buffer
 	 * so that the driver can place hardware specific payload, (if any)
 	 */
-	virtual void prepare_write(libusb_transfer* xfer) throw(error_t) =0;
+	virtual void prepare_write(libusb_transfer* xfer) =0;
 	/**
 	 * Returns handle of associated USB device
 	 */
@@ -105,7 +105,7 @@ public:
 	public:
 		factory() noexcept;
 		virtual driver* create(libusb_device_handle*, uint8_t =0)
-														const throw(error_t) =0;
+														const =0;
 		virtual ~factory() noexcept;
 	//		static driver* create(libusb_device_handle*) noexcept;
 		static device_id devid(libusb_device_handle*) noexcept;
@@ -129,23 +129,23 @@ public:
 	~generic() noexcept;
 	void read_callback(libusb_transfer*, size_t& pos) noexcept { pos = 0; }
 	void write_callback(libusb_transfer*) noexcept { }
-	void prepare_write(libusb_transfer*) throw(error_t) {};
+	void prepare_write(libusb_transfer*) {};
 	const interface& getifc() const noexcept { return ifc; }
-	void sendbreak() const throw(error_t) { throw error_t::not_implemented; }
-	void reset() const throw(error_t) { }
+	void sendbreak() const { throw error_t::not_implemented; }
+	void reset() const { }
 	libusb_device_handle * handle() const noexcept { return dev; }
 protected:
 	inline generic(libusb_device_handle* handle, const interface& _ifc,
-		uint8_t num = 0) throw(error_t) : dev(handle), ifc(_ifc), ifcnum(num),
+		uint8_t num = 0) : dev(handle), ifc(_ifc), ifcnum(num),
 		timeout(default_timeout) {
 		claim_interface();
 	}
-	void setup(const eia_tia_232_info&) const throw(error_t) {}
-	void control(uint8_t, uint8_t, void*, size_t) const throw(error_t);
-	void write_cv(uint8_t r, uint16_t v, uint16_t i) const throw(error_t);
-	void read_cv(uint8_t, uint16_t, uint8_t&) const throw(error_t);
-	void read_cv(uint8_t, uint16_t, uint16_t&) const throw(error_t);
-	void claim_interface() const throw(error_t);
+	void setup(const eia_tia_232_info&) const {}
+	void control(uint8_t, uint8_t, void*, size_t) const;
+	void write_cv(uint8_t r, uint16_t v, uint16_t i) const;
+	void read_cv(uint8_t, uint16_t, uint8_t&) const;
+	void read_cv(uint8_t, uint16_t, uint16_t&) const;
+	void claim_interface() const;
 	void release_interface() const noexcept;
 protected:
 	libusb_device_handle* const dev;

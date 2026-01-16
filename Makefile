@@ -66,7 +66,8 @@ CPPFLAGS += 																\
   -fmessage-length=0														\
   -ffunction-sections  														\
   -fdata-sections															\
-  -std=c++1y  																\
+  -std=c++14  																\
+  -fPIC      																\
 
 
 CFLAGS += 																	\
@@ -78,7 +79,7 @@ CFLAGS += 																	\
   -ffunction-sections 														\
   -fdata-sections 															\
   -std=gnu99 																\
-
+  -fPIC      																\
 
 LDFLAGS +=																	\
   -s -shared				 												\

@@ -47,7 +47,7 @@ static void vlogf(loglevel_t lvl,
 			fprintf(stderr, "{...%*.*s} %s ", W-3, W-3, beg, L[l]);
 		}
 		else
-			fprintf(stderr, "{%*.*s} %s ", W, (end-beg), beg, L[l]);
+			fprintf(stderr, "{%*.*s} %s ", W, static_cast<int>(end-beg), beg, L[l]);
 	} else{
 		fprintf(stderr, "{} %s ", L[l]);
 	}

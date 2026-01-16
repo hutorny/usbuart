@@ -1,2 +1,7 @@
 .svn
 .private
+.project
+.cproject
+/build/
+/libusb/
+/bin/
