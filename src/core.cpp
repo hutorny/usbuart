@@ -278,10 +278,10 @@ public:
 		current   = rdxfer0;
 		writexfer = wrxfer;
 		libusb_fill_bulk_transfer(readxfer0, dev, drv->getifc().ep_bulk_in,
-				readbuff0, chunksize() , read_cb, this, timeout);
+				readbuff0, chunksize() , read_cb, this, 0);
 
 		libusb_fill_bulk_transfer(readxfer1, dev, drv->getifc().ep_bulk_in,
-				readbuff1, chunksize() , read_cb, this, timeout);
+				readbuff1, chunksize() , read_cb, this, 0);
 
 		libusb_fill_bulk_transfer(writexfer, dev, drv->getifc().ep_bulk_out,
 				writebuff, 0, write_cb, this, timeout);
